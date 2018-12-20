@@ -1,0 +1,30 @@
+# This ARG isn't used but prevents warnings in the build script
+ARG REGISTRY
+ARG CODE_VERSION
+FROM clipper/spark-scala-container:develop
+
+LABEL maintainer="Dan Crankshaw <dscrankshaw@gmail.com>"
+
+# First set up maven
+ARG MAVEN_VERSION=3.5.0
+ARG SHA=beb91419245395bd69a4a6edad5ca3ec1a8b64e41457672dc687c173a495f034
+ARG BASE_URL=https://archive.apache.org/dist/maven/maven-3/${MAVEN_VERSION}/binaries
+
+ENV MAVEN_HOME /usr/share/maven
+ENV MAVEN_CONFIG /root/.m2
+
+RUN mkdir -p /root/sysml_container
+
+WORKDIR /root/sysml_container
+
+RUN mkdir -p /model
+
+COPY ./containers/jvm/ /root/sysml_container
+
+ENV CLIPPER_MODEL_PATH=/model
+
+ENV CLIPPER_MODEL_PATH=/model
+
+CMD ["java", "-Djava.library.path=/usr/local/lib", "-Xmx4g", "-cp", "/root/sysml_container/spark-container-impl/target/spark-container-impl-0.1.jar", "ai.clipper.spark.container.impl.ContainerMain"]
+
+HEALTHCHECK --interval=3s --timeout=3s --retries=1 CMD test -f /model_is_ready.check || exit 1
