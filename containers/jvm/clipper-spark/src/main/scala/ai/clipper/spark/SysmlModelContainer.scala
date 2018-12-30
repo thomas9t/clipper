@@ -53,6 +53,8 @@ class SysmlModelContainer(ps: PreparedScript,
       }
     }
     val cleanUpDoneTime = System.nanoTime()
+    System.err.println("RECEIVED BATCH: " + inputVectors.length)
+    System.err.println("TOTAL COMPUTE TIME: " + (setUpDoneTime-startTime))
     fh.write(Seq(inputVectors.length,
                  setUpDoneTime - startTime,
                  computeDoneTime - setUpDoneTime,

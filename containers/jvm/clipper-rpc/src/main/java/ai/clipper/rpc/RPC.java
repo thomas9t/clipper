@@ -215,6 +215,7 @@ public class RPC<I extends DataVector<?>> {
 
               ArrayList<I> inputs = new ArrayList<>();
               int bufferPosition = 0;
+              System.err.println("RECEIVED: " + numInputs + " INPUTS");
               for (int i = 0; i < numInputs; ++i) {
                 inputContentBuffer.position(bufferPosition);
                 int inputSizeBytes = (int) inputHeader.get(i + 2);
