@@ -48,8 +48,8 @@ class SysmlModelContainer(ps: PreparedScript,
       out.add(new SerializableString(res.getDenseBlockValues.mkString(",")))
     } else {
       // for now making the simplifying assumption that no matrix prediction requests are received
-      for (ix <- 0 to res.getNumRows) {
-        out.add(new SerializableString(res.slice(ix, ix + 1).getDenseBlockValues.mkString(",")))
+      for (ix <- 0 until res.getNumRows) {
+        out.add(new SerializableString(res.slice(ix, ix).getDenseBlockValues.mkString(",")))
       }
     }
     val cleanUpDoneTime = System.nanoTime()

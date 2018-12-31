@@ -69,7 +69,6 @@ object Clipper {
 
   val DOCKER_NW: String = "clipper_network"
   val CLIPPER_MANAGEMENT_PORT: Int = 1338
-  val JAR_PATH = "/Users/ahthomas/SystemML/clipper/containers/jvm"
   val CLIPPER_DOCKER_LABEL: String = "ai.clipper.container.label"
 
 
@@ -452,7 +451,7 @@ object Clipper {
       "model_version" -> version.toString,
       "labels" -> labels,
       "input_type" -> "doubles",
-      "batch_size" -> 1,
+      "batch_size" -> -1,
       "container_name" -> CLIPPER_SPARK_CONTAINER_NAME,
       "model_data_path" -> hostModelDataPath
     )
