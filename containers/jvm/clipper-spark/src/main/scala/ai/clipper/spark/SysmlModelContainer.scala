@@ -17,7 +17,7 @@ class SysmlModelContainer(ps: PreparedScript,
                           logPath: String) extends ClipperModel[DoubleVector] {
 
   val fh = new PrintWriter(new File(logPath))
-  fh.write("batch_size,set_up_time,compute_time,clean_up_time,total_time\n")
+  fh.write("batch_size,set_up_time,compute_time,clean_up_time,total_time,timestamp\n")
   fh.flush()
 
   override def getInputType : DataType = {
@@ -59,7 +59,8 @@ class SysmlModelContainer(ps: PreparedScript,
                  setUpDoneTime - startTime,
                  computeDoneTime - setUpDoneTime,
                  cleanUpDoneTime - computeDoneTime,
-                 cleanUpDoneTime - startTime).mkString(",") + "\n")
+                 cleanUpDoneTime - startTime,
+                 System.nanoTime()).mkString(",") + "\n")
     fh.flush()
     out
   }
