@@ -28,7 +28,7 @@ class SysmlModelContainer(ps: PreparedScript,
     // package the inputs into a MatrixBlock
     println("LOGGING TO: " + logPath)
     val startTime = System.nanoTime()
-    val mb: MatrixBlock = new MatrixBlock(inputVectors.length, dataLen, -1).allocateDenseBlock()
+    val mb: MatrixBlock = new MatrixBlock(inputVectors.size(), dataLen, -1).allocateDenseBlock()
     val doubles = mb.getDenseBlockValues
     var start = 0
     for (req <- inputVectors) {
@@ -44,6 +44,7 @@ class SysmlModelContainer(ps: PreparedScript,
 
     // unpackage the predictions and convert to string...
     val out = new ArrayList[SerializableString]()
+    System.err.println("Predicted => " + res.getNumRows + " VALUES")
     if (res.getNumRows == 1) {
       out.add(new SerializableString(res.getDenseBlockValues.mkString(",")))
     } else {
@@ -53,9 +54,9 @@ class SysmlModelContainer(ps: PreparedScript,
       }
     }
     val cleanUpDoneTime = System.nanoTime()
-    System.err.println("RECEIVED BATCH: " + inputVectors.length)
+    System.err.println("RECEIVED BATCH: " + inputVectors.size())
     System.err.println("TOTAL COMPUTE TIME: " + (setUpDoneTime-startTime))
-    fh.write(Seq(inputVectors.length,
+    fh.write(Seq(inputVectors.size(),
                  setUpDoneTime - startTime,
                  computeDoneTime - setUpDoneTime,
                  cleanUpDoneTime - computeDoneTime,
