@@ -27,12 +27,14 @@ class SysmlModelContainer(ps: PreparedScript,
   override def predict(inputVectors: ArrayList[DoubleVector]): ArrayList[SerializableString] = {
     // package the inputs into a MatrixBlock
     println("LOGGING TO: " + logPath)
+    System.err.println("dataLen: " + dataLen)
     val startTime = System.nanoTime()
     val mb: MatrixBlock = new MatrixBlock(inputVectors.size(), dataLen, -1).allocateDenseBlock()
     val doubles = mb.getDenseBlockValues
     var start = 0
     for (req <- inputVectors) {
       req.getData.get(doubles, start, dataLen)
+      req.getData.clear()
       start += dataLen
     }
     mb.setNonZeros(-1)

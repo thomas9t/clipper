@@ -13,6 +13,8 @@ object ContainerMain {
 
     val modelPath = sys.env("CLIPPER_MODEL_PATH")
     val modelName = sys.env("CLIPPER_MODEL_NAME")
+    val useGPU = sys.env.getOrElse("USE_GPU", "false").toBoolean
+
     val modelVersion = sys.env("CLIPPER_MODEL_VERSION").toInt
     val weightsDir = sys.env.getOrElse("WEIGHTS_DIR", "UNUSED")
 
@@ -21,7 +23,7 @@ object ContainerMain {
     val logPath = sys.env.getOrElse("LOG_PATH", "/external/temp/clipper_log.txt")
 
     val conn = new Connection()
-    val container: SysmlModelContainer = Clipper.loadSysmlModel(conn, modelPath, logPath, weightsDir)
+    val container: SysmlModelContainer = Clipper.loadSysmlModel(conn, modelPath, logPath, weightsDir, useGPU)
     val parser = new DoubleVector.Parser
 
     while (true) {

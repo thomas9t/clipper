@@ -200,6 +200,8 @@ public class RPC<I extends DataVector<?>> {
 
               DataType inputType = DataType.fromCode((int) inputHeader.get(0));
               long numInputs = inputHeader.get(1);
+              for (int ix=0; ix < numInputs; ix++)
+                System.err.println("INPUT_HEADER(" + ix + ") => " + inputHeader.get(ix));
 
               int inputContentSizeBytes = 0;
               for (int i = 0; i < numInputs; ++i) {
@@ -224,6 +226,7 @@ public class RPC<I extends DataVector<?>> {
                 inputBuffer.position(0);
                 inputBuffer.limit(inputSizeBytes);
                 I input = inputVectorParser.constructDataVector(inputBuffer, inputSizeBytes);
+                System.err.println("INPUT: " + input);
                 inputs.add(input);
                 bufferPosition += inputSizeBytes;
               }

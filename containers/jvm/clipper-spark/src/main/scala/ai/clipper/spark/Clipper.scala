@@ -86,6 +86,7 @@ object Clipper {
                        ncol: Int,
                        loggingMountPoint: String,
                        logPath: String,
+                       useGpu: Boolean,
                        labels: List[String]) : Unit = {
 
     println("Walrus")
@@ -123,7 +124,7 @@ object Clipper {
 
     // start the local docker container
     println("CALLING START CONTAINER LOCAL...")
-    startSysmlContainer(name, version, basePath, loggingMountPoint, logPath, query_frontend_name, weightsDir)
+    startSysmlContainer(name, version, basePath, loggingMountPoint, logPath, useGpu, query_frontend_name, weightsDir)
   }
 
   def deploySysmlModel(name: String,
@@ -136,6 +137,7 @@ object Clipper {
                        ncol: Int,
                        loggingMountPoint: String,
                        logPath: String,
+                       useGPU: Boolean,
                        labels: List[String]): Unit = {
 
     println("Walrus")
@@ -173,16 +175,16 @@ object Clipper {
 
     // start the local docker container
     println("CALLING START CONTAINER LOCAL...")
-    startSysmlContainer(name, version, basePath, loggingMountPoint, logPath, query_frontend_name)
+    startSysmlContainer(name, version, basePath, loggingMountPoint, logPath, useGPU, query_frontend_name)
   }
 
-  def loadSysmlModel(conn: Connection, basePath: String, logPath: String) : SysmlModelContainer = {
+  def loadSysmlModel(conn: Connection, basePath: String, logPath: String, useGPU: Boolean) : SysmlModelContainer = {
     // read the serialized model file from the disk
     val modelJsonString = Files.readAllLines(Paths.get(basePath + "/model_data.json")).get(0)
     val sysmlModel = read[SysmlModelMeta](modelJsonString)
 
     val inputs = sysmlModel.weights.keys.toArray ++ Array[String](sysmlModel.inVarName)
-    val ps = conn.prepareScript(sysmlModel.dml, inputs, Array[String](sysmlModel.outVarName))
+    val ps = conn.prepareScript(sysmlModel.dml, inputs, Array[String](sysmlModel.outVarName), useGPU, useGPU, 0)
 
     for ((name, value) <- sysmlModel.weights) {
       val mb = new MatrixBlock(value._2, value._3, -1).allocateDenseBlock()
@@ -193,23 +195,31 @@ object Clipper {
     new SysmlModelContainer(ps, sysmlModel.inVarName, sysmlModel.outVarName, sysmlModel.ncol, logPath)
   }
 
-  def loadSysmlModel(conn: Connection, basePath: String, logPath: String, weightsDir: String) : SysmlModelContainer = {
+  def loadSysmlModel(conn: Connection,
+                     basePath: String,
+                     logPath: String,
+                     weightsDir: String,
+                     useGPU: Boolean) : SysmlModelContainer = {
     // read the serialized model file from the disk
     if (weightsDir == "UNUSED")
-      return loadSysmlModel(conn, basePath, logPath)
+      return loadSysmlModel(conn, basePath, logPath, useGPU)
 
+    val weightsPath = "/external/" + weightsDir
     val modelJsonString = Files.readAllLines(Paths.get(basePath + "/model_data.json")).get(0)
     val sysmlModel = read[SysmlModelMeta](modelJsonString)
 
     System.err.println(sysmlModel.dml)
-    System.err.println("WEIGHTS DIR: " + weightsDir)
+    System.err.println("WEIGHTS DIR: " + weightsPath)
+    System.err.println("DIRS IN EXTERNAL:")
     new File("/external").listFiles.foreach(System.err.println(_))
-    new File(weightsDir).listFiles().foreach(System.err.println(_))
-    val weightFiles = new File(weightsDir).listFiles().map(_.toString).filter(x => x.split("\\.").last == "mtx")
+    System.err.println("ENTRIES IN WEIGHTS DIR:")
+    new File(weightsPath).listFiles().foreach(System.err.println(_))
+    System.err.println("")
+    val weightFiles = new File(weightsPath).listFiles().map(_.toString).filter(x => x.split("\\.").last == "mtx")
     val weights = weightFiles.map(x => x.split("/").last.split("\\.")(0) -> readMatrix(x)).toMap
     val inputs = weights.keys.toArray ++ Array[String](sysmlModel.inVarName)
     inputs.foreach(x => System.err.println("INPUT: " + x))
-    val ps = conn.prepareScript(sysmlModel.dml, inputs, Array[String](sysmlModel.outVarName))
+    val ps = conn.prepareScript(sysmlModel.dml, inputs, Array[String](sysmlModel.outVarName), useGPU, useGPU, 0)
 
     for ((name,value) <- weights) {
       System.err.println("SETTING: " + name)
@@ -332,13 +342,15 @@ object Clipper {
                                   modelDataPath: String,
                                   externalMountPoint: String,
                                   logPath: String,
+                                  useGpu: Boolean,
                                   clipper_id: String = "query_frontend",
                                   weightsDir: String = "UNUSED"): Unit = {
     println(s"MODEL_DATA_PATH: $modelDataPath")
     println("CLIPPER ID: " + clipper_id)
 
+    val dockerCmd = if (useGpu) "docker" else "nvidia-docker"
     val startContainerCmd = Seq(
-      "docker",
+      dockerCmd,
       "run",
       "-d",
       s"--network=$DOCKER_NW",
@@ -346,6 +358,7 @@ object Clipper {
       "-v", s"$modelDataPath:/model:ro",
       "-e", s"WEIGHTS_DIR=$weightsDir",
       "-e", s"LOG_PATH=$logPath",
+      "-e", s"USE_GPU=${useGpu.toString}",
       "-e", s"CLIPPER_MODEL_NAME=$name",
       "-e", s"CLIPPER_MODEL_VERSION=$version",
       "-e", s"CLIPPER_IP=$clipper_id",
@@ -446,12 +459,13 @@ object Clipper {
     println("Version: " + version)
     println("Labels: " + labels)
     println("HostModelDataPath: " + hostModelDataPath)
+    println("BATCH SIZE: 1")
     val data = Map(
       "model_name" -> name,
       "model_version" -> version.toString,
       "labels" -> labels,
       "input_type" -> "doubles",
-      "batch_size" -> -1,
+      "batch_size" -> 10,
       "container_name" -> CLIPPER_SPARK_CONTAINER_NAME,
       "model_data_path" -> hostModelDataPath
     )

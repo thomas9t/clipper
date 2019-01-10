@@ -16,6 +16,7 @@ object SysmlDeploy {
         argMap("logStub"),
         argMap("modelNameStub"),
         argMap("K").toInt,
+        argMap("useGPU").toBoolean,
         argMap("numToDeploy").toInt)
     } else if (argMap("model").toLowerCase == "vgg") {
       deployVGGModel(argMap("dmlPath"),
@@ -25,7 +26,8 @@ object SysmlDeploy {
         argMap("externalMountPoint"),
         argMap("logStub"),
         argMap("modelNameStub"),
-        argMap("imgSize").toInt,
+        argMap("K").toInt,
+        argMap("useGPU").toBoolean,
         argMap("numToDeploy").toInt)
     } else {
       val m = argMap("model")
@@ -40,6 +42,7 @@ object SysmlDeploy {
                      logStub: String,
                      modelNameStub: String,
                      K: Int,
+                     useGPU: Boolean,
                      numToDeploy: Int) : Unit = {
     val clipperHost = sys.env.getOrElse("CLIPPER_HOST", "localhost")
     val clipperVersion = sys.env.getOrElse("CLIPPER_MODEL_VERSION", "1").toInt
@@ -52,7 +55,7 @@ object SysmlDeploy {
       val logPath = s"/external/$logStub$m.txt"
       println("LOGGING TO: " + logPath)
       Clipper.deploySysmlModel(s"$modelNameStub$m", clipperVersion,
-        clipperHost, weights, inVarName, outVarName, dml, K, externalMountPoint, logPath, List("a"))
+        clipperHost, weights, inVarName, outVarName, dml, K, externalMountPoint, logPath, useGPU, List("a"))
     }
   }
 
@@ -64,6 +67,7 @@ object SysmlDeploy {
                      logStub: String,
                      modelNameStub: String,
                      imgSize: Int,
+                     useGPU: Boolean,
                      numToDeploy: Int) : Unit = {
     val clipperHost = sys.env.getOrElse("CLIPPER_HOST", "localhost")
     val clipperVersion = sys.env.getOrElse("CLIPPER_MODEL_VERSION", "1").toInt
@@ -74,7 +78,7 @@ object SysmlDeploy {
       val logPath = s"/external/$logStub$m.txt"
       Clipper.deploySysmlModel(s"$modelNameStub$m", clipperVersion,
         clipperHost, weightsDir, inVarName,
-        outVarName, dml, imgSize, externalMountPoint, logPath, List("a"))
+        outVarName, dml, imgSize, externalMountPoint, logPath, useGPU, List("a"))
     }
   }
 }
