@@ -208,21 +208,12 @@ object Clipper {
     val modelJsonString = Files.readAllLines(Paths.get(basePath + "/model_data.json")).get(0)
     val sysmlModel = read[SysmlModelMeta](modelJsonString)
 
-    System.err.println(sysmlModel.dml)
-    System.err.println("WEIGHTS DIR: " + weightsPath)
-    System.err.println("DIRS IN EXTERNAL:")
-    new File("/external").listFiles.foreach(System.err.println(_))
-    System.err.println("ENTRIES IN WEIGHTS DIR:")
-    new File(weightsPath).listFiles().foreach(System.err.println(_))
-    System.err.println("")
     val weightFiles = new File(weightsPath).listFiles().map(_.toString).filter(x => x.split("\\.").last == "mtx")
     val weights = weightFiles.map(x => x.split("/").last.split("\\.")(0) -> readMatrix(x)).toMap
     val inputs = weights.keys.toArray ++ Array[String](sysmlModel.inVarName)
-    inputs.foreach(x => System.err.println("INPUT: " + x))
     val ps = conn.prepareScript(sysmlModel.dml, inputs, Array[String](sysmlModel.outVarName), useGPU, useGPU, 0)
 
     for ((name,value) <- weights) {
-      System.err.println("SETTING: " + name)
       ps.setMatrix(name, value, true)
     }
 
@@ -231,7 +222,6 @@ object Clipper {
 
   @throws[IOException]
   def readMatrix(fname: String): MatrixBlock = try {
-    System.err.println("FILE NAME: " + fname)
     val fnamemtd = DataExpression.getMTDFileName(fname)
     val jmtd = new DataExpression().readMetadataFile(fnamemtd, false)
     //parse json meta data
@@ -348,7 +338,7 @@ object Clipper {
     println(s"MODEL_DATA_PATH: $modelDataPath")
     println("CLIPPER ID: " + clipper_id)
 
-    val dockerCmd = if (useGpu) "nvidia-docker" else "docker"
+    val dockerCmd = if (useGpu) "docker" else "docker"
     val startContainerCmd = Seq(
       dockerCmd,
       "run",
