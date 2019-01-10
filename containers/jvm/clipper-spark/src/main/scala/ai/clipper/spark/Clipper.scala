@@ -348,7 +348,7 @@ object Clipper {
     println(s"MODEL_DATA_PATH: $modelDataPath")
     println("CLIPPER ID: " + clipper_id)
 
-    val dockerCmd = if (useGpu) "docker" else "nvidia-docker"
+    val dockerCmd = if (useGpu) "nvidia-docker" else "docker"
     val startContainerCmd = Seq(
       dockerCmd,
       "run",
