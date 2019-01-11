@@ -1,7 +1,7 @@
 # This ARG isn't used but prevents warnings in the build script
 ARG REGISTRY
 ARG CODE_VERSION
-FROM clipper/spark-scala-container:develop
+FROM athomas9t/sysml-cuda-base:develop
 
 LABEL maintainer="Dan Crankshaw <dscrankshaw@gmail.com>"
 

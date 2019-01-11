@@ -338,7 +338,8 @@ object Clipper {
     println(s"MODEL_DATA_PATH: $modelDataPath")
     println("CLIPPER ID: " + clipper_id)
 
-    val dockerCmd = if (useGpu) "docker" else "docker"
+    val dockerCmd = if (useGpu) "nvidia-docker" else "docker"
+    val nvidiaMountPoint = if (useGpu) Seq("-v", "/usr/local/cuda/lib64:/usr/local/cuda/lib64") else Seq()
     val startContainerCmd = Seq(
       dockerCmd,
       "run",
@@ -355,7 +356,8 @@ object Clipper {
       "-e", "CLIPPER_INPUT_TYPE=doubles",
       "-l", s"$CLIPPER_DOCKER_LABEL",
       CLIPPER_SPARK_CONTAINER_NAME
-    )
+    ) ++ nvidiaMountPoint
+
 
     println(startContainerCmd.mkString(" "))
     if (startContainerCmd.! != 0) {
