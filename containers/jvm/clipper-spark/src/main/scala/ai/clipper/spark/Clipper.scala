@@ -458,7 +458,7 @@ object Clipper {
       "model_version" -> version.toString,
       "labels" -> labels,
       "input_type" -> "doubles",
-      "batch_size" -> 10,
+      "batch_size" -> -1,
       "container_name" -> CLIPPER_SPARK_CONTAINER_NAME,
       "model_data_path" -> hostModelDataPath
     )
