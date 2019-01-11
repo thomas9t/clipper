@@ -346,7 +346,8 @@ object Clipper {
       "-d",
       s"--network=$DOCKER_NW",
       "-v", s"$externalMountPoint:/external",
-      "-v", s"$modelDataPath:/model:ro",
+      "-v", s"$modelDataPath:/model:ro") ++ nvidiaMountPoint ++
+    Seq(
       "-e", s"WEIGHTS_DIR=$weightsDir",
       "-e", s"LOG_PATH=$logPath",
       "-e", s"USE_GPU=${useGpu.toString}",
@@ -356,7 +357,7 @@ object Clipper {
       "-e", "CLIPPER_INPUT_TYPE=doubles",
       "-l", s"$CLIPPER_DOCKER_LABEL",
       CLIPPER_SPARK_CONTAINER_NAME
-    ) ++ nvidiaMountPoint
+    )
 
 
     println(startContainerCmd.mkString(" "))
