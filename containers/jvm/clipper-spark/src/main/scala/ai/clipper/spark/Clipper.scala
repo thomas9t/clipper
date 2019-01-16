@@ -6,7 +6,6 @@ import java.nio.file.StandardOpenOption.CREATE
 import java.nio.file.{Files, Paths}
 import java.io.File
 import java.nio.charset.Charset
-import scala.sys.process._
 
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.PipelineModel
@@ -355,6 +354,7 @@ object Clipper {
       "-e", s"CLIPPER_MODEL_VERSION=$version",
       "-e", s"CLIPPER_IP=$clipper_id",
       "-e", "CLIPPER_INPUT_TYPE=doubles",
+      "--name", s"${name}_container",
       "-l", s"$CLIPPER_DOCKER_LABEL",
       CLIPPER_SPARK_CONTAINER_NAME
     )

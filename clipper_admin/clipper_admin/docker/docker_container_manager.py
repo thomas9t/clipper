@@ -318,6 +318,22 @@ class DockerContainerManager(ContainerManager):
             "CLIPPER_INPUT_TYPE": input_type,
         }
 
+        if "environment" in self.extra_container_kwargs:
+            env = self.extra_container_kwargs["environment"]
+            if type(env) != dict:
+                new_env = {}
+                for val in env:
+                    k,v = val.split("=", 1)
+                    new_env[k] = v
+            else:
+                new_env = env
+            for k, v in new_env.items():
+                if not k in env_vars:
+                    env_vars[k] = v
+
+        old_env = self.extra_container_kwargs["environment"]
+        self.extra_container_kwargs.pop("environment")
+
         model_container_label = create_model_container_label(name, version)
         labels = self.common_labels.copy()
         labels[CLIPPER_MODEL_CONTAINER_LABEL] = model_container_label
@@ -331,6 +347,8 @@ class DockerContainerManager(ContainerManager):
             environment=env_vars,
             labels=labels,
             **self.extra_container_kwargs)
+        
+        self.extra_container_kwargs["environment"] = old_env
 
         # Metric Section
         add_to_metric_config(model_container_name, self.prom_config_path,
@@ -361,6 +379,7 @@ class DockerContainerManager(ContainerManager):
                 container = self.docker_client.containers.get(name)
                 while container.attrs.get("State").get("Status") != "running" or \
                         self.docker_client.api.inspect_container(name).get("State").get("Health").get("Status") != "healthy":
+                    state = container.attrs.get("State").get("Status") 
                     time.sleep(3)
 
         elif len(current_replicas) > num_replicas:
