@@ -55,7 +55,9 @@ object SysmlDeploy {
     for (m <- 1 to numToDeploy) {
       val logPath = s"/external/$logStub$m.txt"
       println("LOGGING TO: " + logPath)
-      s"docker kill ${modelNameStub}${m}_container".!
+      println("KILLING OLD CONTAINER...")
+      s"docker container stop ${modelNameStub}${m}_container".!
+      s"docker container rm ${modelNameStub}${m}_container".!
       Clipper.deploySysmlModel(s"$modelNameStub$m", clipperVersion,
         clipperHost, weights, inVarName, outVarName, dml, K, externalMountPoint, logPath, useGPU, List("a"))
     }
@@ -78,7 +80,8 @@ object SysmlDeploy {
     println("CALLING DEPLOY MODEL...")
     for (m <- 1 to numToDeploy) {
       val logPath = s"/external/$logStub$m.txt"
-      s"docker kill ${modelNameStub}${m}_container".!
+      s"docker container stop ${modelNameStub}${m}_container".!
+      s"docker container rm ${modelNameStub}${m}_container".!
       Clipper.deploySysmlModel(s"$modelNameStub$m", clipperVersion,
         clipperHost, weightsDir, inVarName,
         outVarName, dml, imgSize, externalMountPoint, logPath, useGPU, List("a"))
