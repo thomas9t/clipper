@@ -18,7 +18,8 @@ object SysmlDeploy {
         argMap("modelNameStub"),
         argMap("K").toInt,
         argMap("useGPU").toBoolean,
-        argMap("numToDeploy").toInt)
+        argMap("numToDeploy").toInt,
+        argMap.getOrElse("batchSize", "-1").toInt)
     } else if (argMap("model").toLowerCase == "vgg") {
       deployVGGModel(argMap("dmlPath"),
         argMap("weightsDir"),
@@ -29,7 +30,8 @@ object SysmlDeploy {
         argMap("modelNameStub"),
         argMap("K").toInt,
         argMap("useGPU").toBoolean,
-        argMap("numToDeploy").toInt)
+        argMap("numToDeploy").toInt,
+        argMap.getOrElse("batchSize", "-1").toInt)
     } else {
       val m = argMap("model")
       throw new RuntimeException(s"Invalid Model: $m")
@@ -44,7 +46,8 @@ object SysmlDeploy {
                      modelNameStub: String,
                      K: Int,
                      useGPU: Boolean,
-                     numToDeploy: Int) : Unit = {
+                     numToDeploy: Int,
+                     batchSize: Int = -1) : Unit = {
     val clipperHost = sys.env.getOrElse("CLIPPER_HOST", "localhost")
     val clipperVersion = sys.env.getOrElse("CLIPPER_MODEL_VERSION", "1").toInt
     val dml = Source.fromFile(dmlPath).getLines().mkString("\n")
@@ -59,7 +62,7 @@ object SysmlDeploy {
       s"docker container stop ${modelNameStub}${m}_container".!
       s"docker container rm ${modelNameStub}${m}_container".!
       Clipper.deploySysmlModel(s"$modelNameStub$m", clipperVersion,
-        clipperHost, weights, inVarName, outVarName, dml, K, externalMountPoint, logPath, useGPU, List("a"))
+        clipperHost, weights, inVarName, outVarName, dml, K, externalMountPoint, logPath, useGPU, List("a"), batchSize)
     }
   }
 
@@ -72,7 +75,8 @@ object SysmlDeploy {
                      modelNameStub: String,
                      imgSize: Int,
                      useGPU: Boolean,
-                     numToDeploy: Int) : Unit = {
+                     numToDeploy: Int,
+                     batchSize: Int = -1) : Unit = {
     val clipperHost = sys.env.getOrElse("CLIPPER_HOST", "localhost")
     val clipperVersion = sys.env.getOrElse("CLIPPER_MODEL_VERSION", "1").toInt
     val dml = Source.fromFile(dmlPath).getLines().mkString("\n")
@@ -84,7 +88,7 @@ object SysmlDeploy {
       s"docker container rm ${modelNameStub}${m}_container".!
       Clipper.deploySysmlModel(s"$modelNameStub$m", clipperVersion,
         clipperHost, weightsDir, inVarName,
-        outVarName, dml, imgSize, externalMountPoint, logPath, useGPU, List("a"))
+        outVarName, dml, imgSize, externalMountPoint, logPath, useGPU, List("a"), batchSize)
     }
   }
 }

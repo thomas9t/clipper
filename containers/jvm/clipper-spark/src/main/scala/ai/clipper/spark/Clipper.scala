@@ -86,7 +86,8 @@ object Clipper {
                        loggingMountPoint: String,
                        logPath: String,
                        useGpu: Boolean,
-                       labels: List[String]) : Unit = {
+                       labels: List[String],
+                       batchSize: Int) : Unit = {
 
     println("Walrus")
     val basePath = Paths.get("/tmp", name, version.toString).toString
@@ -114,7 +115,7 @@ object Clipper {
     Files.write(Paths.get(basePath + "/model_data.json"), modelJson.getBytes, CREATE)
 
     // publish the model to the clipper service
-    publishModelToClipper(clipperHost, name, version, labels, basePath)
+    publishModelToClipper(clipperHost, name, version, labels, basePath, batchSize)
 
     // figure out the query frontend name. This is a bit hacky and there should be a better way to do this
     val res = "docker network inspect clipper_network" !!
@@ -137,7 +138,8 @@ object Clipper {
                        loggingMountPoint: String,
                        logPath: String,
                        useGPU: Boolean,
-                       labels: List[String]): Unit = {
+                       labels: List[String],
+                       batchSize: Int): Unit = {
 
     println("Walrus")
     val basePath = Paths.get("/tmp", name, version.toString).toString
@@ -165,7 +167,7 @@ object Clipper {
     Files.write(Paths.get(basePath + "/model_data.json"), modelJson.getBytes, CREATE)
 
     // publish the model to the clipper service
-    publishModelToClipper(clipperHost, name, version, labels, basePath)
+    publishModelToClipper(clipperHost, name, version, labels, basePath, batchSize)
 
     // figure out the query frontend name. This is a bit hacky and there should be a better way to do this
     val res = "docker network inspect clipper_network" !!
@@ -446,7 +448,8 @@ object Clipper {
                                     name: String,
                                     version: Int,
                                     labels: List[String],
-                                    hostModelDataPath: String): Unit = {
+                                    hostModelDataPath: String,
+                                    batchSize: Int = -1): Unit = {
     println("Host: " + host)
     println("Name: " + name)
     println("Version: " + version)
@@ -458,7 +461,7 @@ object Clipper {
       "model_version" -> version.toString,
       "labels" -> labels,
       "input_type" -> "doubles",
-      "batch_size" -> 1,
+      "batch_size" -> batchSize,
       "container_name" -> CLIPPER_SPARK_CONTAINER_NAME,
       "model_data_path" -> hostModelDataPath
     )
