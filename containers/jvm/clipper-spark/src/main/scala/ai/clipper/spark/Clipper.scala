@@ -209,6 +209,8 @@ object Clipper {
     val modelJsonString = Files.readAllLines(Paths.get(basePath + "/model_data.json")).get(0)
     val sysmlModel = read[SysmlModelMeta](modelJsonString)
 
+    System.err.println("WEIGHTS PATH: " + weightsPath)
+    new File(weightsPath).listFiles().foreach { println(_) }
     val weightFiles = new File(weightsPath).listFiles().map(_.toString).filter(x => x.split("\\.").last == "mtx")
     val weights = weightFiles.map(x => x.split("/").last.split("\\.")(0) -> readMatrix(x)).toMap
     val inputs = weights.keys.toArray ++ Array[String](sysmlModel.inVarName)

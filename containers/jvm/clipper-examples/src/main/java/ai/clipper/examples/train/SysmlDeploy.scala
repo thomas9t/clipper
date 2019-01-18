@@ -9,19 +9,8 @@ object SysmlDeploy {
 
   def main(args: Array[String]): Unit = {
     val argMap = args.map(x => x.split("=")(0) -> x.split("=")(1)).toMap
-    if (argMap("model").toLowerCase == "glm") {
-      deployGlmModel(argMap("dmlPath"),
-        argMap("inVarName"),
-        argMap("outVarName"),
-        argMap("externalMountPoint"),
-        argMap("logStub"),
-        argMap("modelNameStub"),
-        argMap("K").toInt,
-        argMap("useGPU").toBoolean,
-        argMap("numToDeploy").toInt,
-        argMap.getOrElse("batchSize", "-1").toInt)
-    } else if (argMap("model").toLowerCase == "vgg") {
-      deployVGGModel(argMap("dmlPath"),
+    if (argMap.getOrElse("weightsDir", "unused") != "unused") {
+      deployStaticModel(argMap("dmlPath"),
         argMap("weightsDir"),
         argMap("inVarName"),
         argMap("outVarName"),
@@ -33,21 +22,29 @@ object SysmlDeploy {
         argMap("numToDeploy").toInt,
         argMap.getOrElse("batchSize", "-1").toInt)
     } else {
-      val m = argMap("model")
-      throw new RuntimeException(s"Invalid Model: $m")
+      deployDynamicModel(argMap("dmlPath"),
+        argMap("inVarName"),
+        argMap("outVarName"),
+        argMap("externalMountPoint"),
+        argMap("logStub"),
+        argMap("modelNameStub"),
+        argMap("K").toInt,
+        argMap("useGPU").toBoolean,
+        argMap("numToDeploy").toInt,
+        argMap.getOrElse("batchSize", "-1").toInt)
     }
   }
 
-  def deployGlmModel(dmlPath: String,
-                     inVarName: String,
-                     outVarName: String,
-                     externalMountPoint: String,
-                     logStub: String,
-                     modelNameStub: String,
-                     K: Int,
-                     useGPU: Boolean,
-                     numToDeploy: Int,
-                     batchSize: Int = -1) : Unit = {
+  def deployDynamicModel(dmlPath: String,
+                         inVarName: String,
+                         outVarName: String,
+                         externalMountPoint: String,
+                         logStub: String,
+                         modelNameStub: String,
+                         K: Int,
+                         useGPU: Boolean,
+                         numToDeploy: Int,
+                         batchSize: Int = -1) : Unit = {
     val clipperHost = sys.env.getOrElse("CLIPPER_HOST", "localhost")
     val clipperVersion = sys.env.getOrElse("CLIPPER_MODEL_VERSION", "1").toInt
     val dml = Source.fromFile(dmlPath).getLines().mkString("\n")
@@ -66,17 +63,17 @@ object SysmlDeploy {
     }
   }
 
-  def deployVGGModel(dmlPath: String,
-                     weightsDir: String,
-                     inVarName: String,
-                     outVarName: String,
-                     externalMountPoint: String,
-                     logStub: String,
-                     modelNameStub: String,
-                     imgSize: Int,
-                     useGPU: Boolean,
-                     numToDeploy: Int,
-                     batchSize: Int = -1) : Unit = {
+  def deployStaticModel(dmlPath: String,
+                        weightsDir: String,
+                        inVarName: String,
+                        outVarName: String,
+                        externalMountPoint: String,
+                        logStub: String,
+                        modelNameStub: String,
+                        imgSize: Int,
+                        useGPU: Boolean,
+                        numToDeploy: Int,
+                        batchSize: Int = -1) : Unit = {
     val clipperHost = sys.env.getOrElse("CLIPPER_HOST", "localhost")
     val clipperVersion = sys.env.getOrElse("CLIPPER_MODEL_VERSION", "1").toInt
     val dml = Source.fromFile(dmlPath).getLines().mkString("\n")
