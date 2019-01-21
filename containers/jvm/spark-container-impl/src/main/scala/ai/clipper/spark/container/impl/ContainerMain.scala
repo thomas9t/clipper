@@ -26,6 +26,8 @@ object ContainerMain {
     val container: SysmlModelContainer = Clipper.loadSysmlModel(conn, modelPath, logPath, weightsDir, gpuIndex)
     val parser = new DoubleVector.Parser
 
+    System.err.println("USING GPU: " + gpuIndex)
+
     while (true) {
       println("Starting Clipper SystemML Container")
       println(s"Serving model $modelName@$modelVersion")
