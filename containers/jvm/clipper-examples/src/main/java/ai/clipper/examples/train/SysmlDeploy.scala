@@ -18,7 +18,7 @@ object SysmlDeploy {
         argMap("logStub"),
         argMap("modelNameStub"),
         argMap("K").toInt,
-        argMap("useGPU").toBoolean,
+        argMap("gpuIndex").toInt,
         argMap("numToDeploy").toInt,
         argMap.getOrElse("batchSize", "-1").toInt)
     } else {
@@ -29,7 +29,7 @@ object SysmlDeploy {
         argMap("logStub"),
         argMap("modelNameStub"),
         argMap("K").toInt,
-        argMap("useGPU").toBoolean,
+        argMap("gpuIndex").toInt,
         argMap("numToDeploy").toInt,
         argMap.getOrElse("batchSize", "-1").toInt)
     }
@@ -42,7 +42,7 @@ object SysmlDeploy {
                          logStub: String,
                          modelNameStub: String,
                          K: Int,
-                         useGPU: Boolean,
+                         gpuIndex: Int,
                          numToDeploy: Int,
                          batchSize: Int = -1) : Unit = {
     val clipperHost = sys.env.getOrElse("CLIPPER_HOST", "localhost")
@@ -59,7 +59,7 @@ object SysmlDeploy {
       s"docker container stop ${modelNameStub}${m}_container".!
       s"docker container rm ${modelNameStub}${m}_container".!
       Clipper.deploySysmlModel(s"$modelNameStub$m", clipperVersion,
-        clipperHost, weights, inVarName, outVarName, dml, K, externalMountPoint, logPath, useGPU, List("a"), batchSize)
+        clipperHost, weights, inVarName, outVarName, dml, K, externalMountPoint, logPath, gpuIndex, List("a"), batchSize)
     }
   }
 
@@ -71,7 +71,7 @@ object SysmlDeploy {
                         logStub: String,
                         modelNameStub: String,
                         imgSize: Int,
-                        useGPU: Boolean,
+                        gpuIndex: Int,
                         numToDeploy: Int,
                         batchSize: Int = -1) : Unit = {
     val clipperHost = sys.env.getOrElse("CLIPPER_HOST", "localhost")
@@ -85,7 +85,7 @@ object SysmlDeploy {
       s"docker container rm ${modelNameStub}${m}_container".!
       Clipper.deploySysmlModel(s"$modelNameStub$m", clipperVersion,
         clipperHost, weightsDir, inVarName,
-        outVarName, dml, imgSize, externalMountPoint, logPath, useGPU, List("a"), batchSize)
+        outVarName, dml, imgSize, externalMountPoint, logPath, gpuIndex, List("a"), batchSize)
     }
   }
 }

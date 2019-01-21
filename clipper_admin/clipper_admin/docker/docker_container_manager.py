@@ -74,6 +74,7 @@ class DockerContainerManager(ContainerManager):
         self.clipper_management_port = clipper_management_port
         self.clipper_rpc_port = clipper_rpc_port
         self.redis_ip = redis_ip
+        self.gpu_index_choices = None
         if redis_ip is None:
             self.external_redis = False
         else:
@@ -294,7 +295,7 @@ class DockerContainerManager(ContainerManager):
     def get_num_replicas(self, name, version):
         return len(self._get_replicas(name, version))
 
-    def _add_replica(self, name, version, input_type, image):
+    def _add_replica(self, name, version, input_type, image, gpu_index=-1):
 
         containers = self.docker_client.containers.list(
             filters={
@@ -316,6 +317,7 @@ class DockerContainerManager(ContainerManager):
             # in same docker network as the query frontend
             "CLIPPER_IP": query_frontend_hostname,
             "CLIPPER_INPUT_TYPE": input_type,
+            "GPU_INDEX": gpu_index
         }
 
         if "environment" in self.extra_container_kwargs:
@@ -358,6 +360,9 @@ class DockerContainerManager(ContainerManager):
         # Return model_container_name so we can check if it's up and running later
         return model_container_name
 
+    def set_gpu_index_choices(self, gpu_index_choices):
+        self.gpu_index_choices = gpu_index_choices
+
     def set_num_replicas(self, name, version, input_type, image, num_replicas):
         current_replicas = self._get_replicas(name, version)
         if len(current_replicas) < num_replicas:
@@ -371,15 +376,18 @@ class DockerContainerManager(ContainerManager):
                     missing=(num_missing)))
 
             model_container_names = []
-            for _ in range(num_missing):
+            for ix in range(num_missing):
+                if self.gpu_index_choices is not None:
+                    gpu_index = self.gpu_index_choices[ix % len(self.gpu_index_choices)]
+                else:
+                    gpu_index = -1
                 container_name = self._add_replica(name, version, input_type,
-                                                   image)
+                                                   image, gpu_index=gpu_index)
                 model_container_names.append(container_name)
             for name in model_container_names:
                 container = self.docker_client.containers.get(name)
                 while container.attrs.get("State").get("Status") != "running" or \
                         self.docker_client.api.inspect_container(name).get("State").get("Health").get("Status") != "healthy":
-                    state = container.attrs.get("State").get("Status") 
                     time.sleep(3)
 
         elif len(current_replicas) > num_replicas:

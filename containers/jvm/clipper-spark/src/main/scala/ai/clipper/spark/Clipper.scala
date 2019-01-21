@@ -85,7 +85,7 @@ object Clipper {
                        ncol: Int,
                        loggingMountPoint: String,
                        logPath: String,
-                       useGpu: Boolean,
+                       gpuIndex: Int,
                        labels: List[String],
                        batchSize: Int) : Unit = {
 
@@ -124,7 +124,7 @@ object Clipper {
 
     // start the local docker container
     println("CALLING START CONTAINER LOCAL...")
-    startSysmlContainer(name, version, basePath, loggingMountPoint, logPath, useGpu, query_frontend_name, weightsDir)
+    startSysmlContainer(name, version, basePath, loggingMountPoint, logPath, gpuIndex, query_frontend_name, weightsDir)
   }
 
   def deploySysmlModel(name: String,
@@ -137,7 +137,7 @@ object Clipper {
                        ncol: Int,
                        loggingMountPoint: String,
                        logPath: String,
-                       useGPU: Boolean,
+                       gpuIndex: Int,
                        labels: List[String],
                        batchSize: Int): Unit = {
 
@@ -176,10 +176,11 @@ object Clipper {
 
     // start the local docker container
     println("CALLING START CONTAINER LOCAL...")
-    startSysmlContainer(name, version, basePath, loggingMountPoint, logPath, useGPU, query_frontend_name)
+    startSysmlContainer(name, version, basePath, loggingMountPoint, logPath, gpuIndex, query_frontend_name)
   }
 
-  def loadSysmlModel(conn: Connection, basePath: String, logPath: String, useGPU: Boolean) : SysmlModelContainer = {
+  def loadSysmlModel(conn: Connection, basePath: String, logPath: String, gpuIndex: Int) : SysmlModelContainer = {
+    val useGPU = gpuIndex > -1
     // read the serialized model file from the disk
     val modelJsonString = Files.readAllLines(Paths.get(basePath + "/model_data.json")).get(0)
     val sysmlModel = read[SysmlModelMeta](modelJsonString)
@@ -200,10 +201,12 @@ object Clipper {
                      basePath: String,
                      logPath: String,
                      weightsDir: String,
-                     useGPU: Boolean) : SysmlModelContainer = {
+                     gpuIndex: Int) : SysmlModelContainer = {
+
+    val useGPU = gpuIndex > -1
     // read the serialized model file from the disk
     if (weightsDir == "UNUSED")
-      return loadSysmlModel(conn, basePath, logPath, useGPU)
+      return loadSysmlModel(conn, basePath, logPath, gpuIndex)
 
     val weightsPath = "/external/" + weightsDir
     val modelJsonString = Files.readAllLines(Paths.get(basePath + "/model_data.json")).get(0)
@@ -335,12 +338,13 @@ object Clipper {
                                   modelDataPath: String,
                                   externalMountPoint: String,
                                   logPath: String,
-                                  useGpu: Boolean,
+                                  gpuIndex: Int,
                                   clipper_id: String = "query_frontend",
                                   weightsDir: String = "UNUSED"): Unit = {
     println(s"MODEL_DATA_PATH: $modelDataPath")
     println("CLIPPER ID: " + clipper_id)
-
+    println("USING GPU: " + gpuIndex)
+    val useGpu = gpuIndex > -1
     val dockerCmd = if (useGpu) "nvidia-docker" else "docker"
     val nvidiaMountPoint = if (useGpu) Seq("-v", "/usr/local/cuda/lib64:/usr/local/cuda/lib64") else Seq()
     val startContainerCmd = Seq(
@@ -353,7 +357,7 @@ object Clipper {
     Seq(
       "-e", s"WEIGHTS_DIR=$weightsDir",
       "-e", s"LOG_PATH=$logPath",
-      "-e", s"USE_GPU=${useGpu.toString}",
+      "-e", s"GPU_INDEX=${gpuIndex.toString}",
       "-e", s"CLIPPER_MODEL_NAME=$name",
       "-e", s"CLIPPER_MODEL_VERSION=$version",
       "-e", s"CLIPPER_IP=$clipper_id",
