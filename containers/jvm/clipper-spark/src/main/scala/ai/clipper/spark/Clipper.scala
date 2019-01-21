@@ -364,7 +364,7 @@ object Clipper {
       "-e", "CLIPPER_INPUT_TYPE=doubles",
       "--name", s"${name}_container",
       "-l", s"$CLIPPER_DOCKER_LABEL",
-      "athomas9t/sysml-clipper-container"
+      CLIPPER_SPARK_CONTAINER_NAME
     )
 
 
