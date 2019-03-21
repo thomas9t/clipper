@@ -212,6 +212,8 @@ object Clipper {
     val modelJsonString = Files.readAllLines(Paths.get(basePath + "/model_data.json")).get(0)
     val sysmlModel = read[SysmlModelMeta](modelJsonString)
 
+    System.err.println("External directory")
+    new File("/external").listFiles().foreach { println(_) }
     System.err.println("WEIGHTS PATH: " + weightsPath)
     new File(weightsPath).listFiles().foreach { println(_) }
     val weightFiles = new File(weightsPath).listFiles().map(_.toString).filter(x => x.split("\\.").last == "mtx")
