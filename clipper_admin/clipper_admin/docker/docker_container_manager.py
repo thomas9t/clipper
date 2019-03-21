@@ -333,8 +333,9 @@ class DockerContainerManager(ContainerManager):
                 if not k in env_vars:
                     env_vars[k] = v
 
-        old_env = self.extra_container_kwargs["environment"]
-        self.extra_container_kwargs.pop("environment")
+        old_env = self.extra_container_kwargs.get("environment", None)
+        if old_env is not None:
+            self.extra_container_kwargs.pop("environment")
 
         model_container_label = create_model_container_label(name, version)
         labels = self.common_labels.copy()
@@ -347,10 +348,12 @@ class DockerContainerManager(ContainerManager):
             image,
             name=model_container_name,
             environment=env_vars,
+            
             labels=labels,
             **self.extra_container_kwargs)
         
-        self.extra_container_kwargs["environment"] = old_env
+        if old_env is not None:
+            self.extra_container_kwargs["environment"] = old_env
 
         # Metric Section
         add_to_metric_config(model_container_name, self.prom_config_path,

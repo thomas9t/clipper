@@ -419,8 +419,6 @@ object Clipper {
       "--format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'"
     )
 
-
-
     val sshCommand = Seq("ssh",
       "-o", "StrictHostKeyChecking=no",
       "-i", s"$sshKeyPath",
