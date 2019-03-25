@@ -359,6 +359,7 @@ object Clipper {
     Seq(
       "-e", s"WEIGHTS_DIR=$weightsDir",
       "-e", s"LOG_PATH=$logPath",
+      "-e", s"CUDA_VISIBLE_DEVICES=${gpuIndex}",
       "-e", s"GPU_INDEX=${gpuIndex.toString}",
       "-e", s"CLIPPER_MODEL_NAME=$name",
       "-e", s"CLIPPER_MODEL_VERSION=$version",
