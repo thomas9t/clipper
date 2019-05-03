@@ -36,7 +36,7 @@ object ContainerMain {
       val rpcClient = new RPC(parser)
       try {
         rpcClient.start(container, modelName, modelVersion, clipperAddress, clipperPort)
-        println("Connected...")
+        System.err.println("Connected...")
       } catch {
         case e: UnknownHostException => e.printStackTrace()
       }

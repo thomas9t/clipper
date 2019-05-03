@@ -181,6 +181,7 @@ object Clipper {
 
   def loadSysmlModel(conn: Connection, basePath: String, logPath: String, gpuIndex: Int) : SysmlModelContainer = {
     val useGPU = gpuIndex > -1
+    System.err.println("Loading model!")
     // read the serialized model file from the disk
     val modelJsonString = Files.readAllLines(Paths.get(basePath + "/model_data.json")).get(0)
     val sysmlModel = read[SysmlModelMeta](modelJsonString)
@@ -194,6 +195,7 @@ object Clipper {
       ps.setMatrix(name, mb, true)
     }
 
+    System.err.println("Starting container...")
     new SysmlModelContainer(ps, sysmlModel.inVarName, sysmlModel.outVarName, sysmlModel.ncol, logPath)
   }
 

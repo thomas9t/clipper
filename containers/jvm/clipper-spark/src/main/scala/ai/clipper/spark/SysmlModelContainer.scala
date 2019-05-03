@@ -16,6 +16,7 @@ class SysmlModelContainer(ps: PreparedScript,
                           dataLen: Int,
                           logPath: String) extends ClipperModel[DoubleVector] {
 
+  System.err.println("Hi from SysmlModelContainer")
   val fh = new PrintWriter(new File(logPath))
   fh.write("batch_size,set_up_time,compute_time,clean_up_time,total_time,timestamp\n")
   fh.flush()

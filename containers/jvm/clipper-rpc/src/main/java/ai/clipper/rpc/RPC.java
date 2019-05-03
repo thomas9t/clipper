@@ -272,6 +272,7 @@ public class RPC<I extends DataVector<?>> {
 
   private void handlePredictRequest(long msgId, ArrayList<I> inputs, ClipperModel<I> model,
       ZMQ.Socket socket) throws IOException {
+        System.err.println("Handling Prediction Request");
     List<SerializableString> predictions = model.predict(inputs);
 
     if (predictions.size() != inputs.size()) {
