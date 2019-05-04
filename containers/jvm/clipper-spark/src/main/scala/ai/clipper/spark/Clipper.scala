@@ -350,7 +350,8 @@ object Clipper {
     println("USING GPU: " + gpuIndex)
     val useGpu = gpuIndex > -1
     val dockerCmd = if (useGpu) "nvidia-docker" else "docker"
-    val nvidiaMountPoint = if (useGpu) Seq("-v", "/usr/local/cuda/lib64:/usr/local/cuda/lib64") else Seq()
+    //val nvidiaMountPoint = if (useGpu) Seq("-v", "/usr/local/cuda/lib64:/usr/local/cuda/lib64") else Seq()
+    val nvidiaMountPoint = Seq()
     val startContainerCmd = Seq(
       dockerCmd,
       "run",
